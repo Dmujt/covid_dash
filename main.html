@@ -14,6 +14,23 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js" integrity="sha512-4UKI/XKm3xrvJ6pZS5oTRvIQGIzZFoXR71rRBb1y2N+PbwAsKa5tPl2J6WvbEvwN3TxQCm8hMzsl/pO+82iRlg==" crossorigin="anonymous"></script>
 
 </head>
+<style>
+
+    #cases-line {
+        fill: none;
+        stroke: steelblue;
+        stroke-width: 1.5px;
+    }
+    
+    #map-svg {
+        stroke: aliceblue;
+        stroke-width: 1.5px;
+    }
+    
+    
+</style>
+
+
 <body>
 <div class="container-fluid" style="margin-top: 10px;">
 <div class="row justify-content-md-center">
@@ -41,28 +58,28 @@
             <div class="col col-lg-5 col-md-9 col-sm-12">
                 <div class="card" style='min-height:250px' >
                     <div class="card-body" id="map-container">
-
+                        &nbsp;
                     </div>
                 </div>
             </div>
             <div class="col col-lg-7 col-md-3 col-sm-12">
                 <div class="card">
-                    <div class="card-body">
-                      Number Here
+                    <div class="card-body" id="number-container">
+                        &nbsp;
                     </div>
                 </div>
                 <div class="row mt-2">
                     <div class="col col-sm-6">
                         <div class="card">
                             <div class="card-body">
-                              Pie Chart Here
+                                &nbsp;
                             </div>
                         </div>
                     </div>
                     <div class="col col-sm-6">
                         <div class="card">
-                            <div class="card-body">
-                              Pie Chart2 Here
+                            <div class="card-body" id="line-container">
+                                &nbsp;
                             </div>
                         </div>
                     </div>
@@ -70,17 +87,17 @@
             </div>
         </div>
         <div class="row mt-2">
-            <div class="col col-lg-10 col-md-8 col-sm-12">
+            <div class="col col-lg-6 col-md-6 col-sm-12">
                 <div class="card">
-                    <div class="card-body">
-                      Graph 2 Here
+                    <div class="card-body" id="bar-container">
+                        &nbsp;
                     </div>
                 </div>
             </div>
-            <div class="col col-lg-2 col-md-4 col-sm-12">
+            <div class="col col-lg-6 col-md-6 col-sm-12">
                 <div class="card">
-                    <div class="card-body">
-                        Something Else
+                    <div class="card-body" id="dem-bar-container">
+                        &nbsp;
                     </div>
                 </div>
             </div>
@@ -90,6 +107,7 @@
 
 </div>
 </body>
+
 <script>
 
 //We will build a basic function to handle window resizing.
@@ -190,6 +208,436 @@ d3.json(michiganMap)
 
 
     })
+
+//******************** Bar Chart **********************************************************
+//*******************************************************************************************
+//*******************************************************************************************
+
+
+let bcWidth = 350;
+let bcHeight = 300;
+
+var margin = {top: 40, right: 40, bottom: 40, left: 40}
+
+var barsvg = d3.select("#bar-container")
+    .append("svg")
+    .attr("width", bcWidth + margin.left + margin.right)
+    .attr("height", bcHeight + margin.top + margin.bottom)
+    .attr("id", "bar-svg")
+
+var xScale = d3.scaleBand()
+    .range([0, bcWidth])
+    .padding(0.2);
+
+var yScale = d3.scaleLinear()
+    .range([bcHeight, 0]);
+
+var BCcolorScale = d3.scaleThreshold()
+    .domain([0, 6, 12, 18, 24, 30])
+    .range(d3.schemeBlues[7]);
+
+function renderBarChart () {
+    d3.csv("https://raw.githubusercontent.com/Dmujt/covid_dash/master/unemployment.csv").then(function (data) {
+
+        data.forEach(function (d) {
+            d.index = d.index;
+            d.county = d.county;
+            d.month = d.month;
+            d.rate = d.rate;
+        });
+
+        unemployment = data.filter(function (d) {
+            return d.county === "Oakland"
+        })
+        console.log(unemployment)
+
+        xScale.domain(unemployment.map(function (d) {
+            return d.month;
+        }));
+        yScale.domain([0, 25]);
+
+        barsvg.selectAll(".bar")
+            .data(unemployment)
+            .enter().append("rect")
+            .attr("fill", function (d) {
+                return BCcolorScale(d.rate)
+            })
+            .attr("x", function (d) {
+                return xScale(d.month) + margin.right;
+            })
+            .attr("width", xScale.bandwidth())
+            .attr("y", function (d) {
+                return yScale(d.rate) + margin.bottom;
+            })
+            .attr("height", function (d) {
+                return bcHeight - yScale(d.rate);
+            });
+
+        var g = barsvg.append("g")
+            .attr("transform", "translate(" + 40 + "," + 40 + ")");
+
+        g.append("g")
+            .attr("transform", "translate(0," + bcHeight + ")")
+            .call(d3.axisBottom(xScale));
+
+        g.append("g")
+            .call(d3.axisLeft(yScale).tickFormat(function (d) {
+                return d + "%";
+            }).ticks(15))
+            .append("text")
+            .attr("text-anchor", "end")
+            .text("value");
+        barsvg.selectAll("rect")
+            .data(unemployment)
+            .append("title")
+            .text((d) => d.rate)
+    });
+
+}
+
+function updateBarChart(county) {
+
+    d3.csv("unemployment.csv").then(function (data) {
+
+        data.forEach(function (d) {
+            d.index = d.index;
+            d.county = d.county;
+            d.month = d.month;
+            d.rate = +d.rate;
+        });
+
+        unemployment = data.filter(function (d) {
+            return d.county === county;
+        })
+
+        xScale.domain(unemployment.map(function (d) {
+            return d.month;
+        }));
+        yScale.domain([0,  d3.max(unemployment, function (d) {
+            return +d.rate;
+        })]);
+
+        barsvg.select(".bar").remove().exit()
+
+        barsvg.selectAll("rect")
+            .transition().duration(500)
+            .attr("fill", function (d) {
+                return BCcolorScale(d.rate)
+            })
+            .attr("x", function (d) {
+                return xScale(d.month) + margin.right;
+            })
+            .attr("width", xScale.bandwidth())
+            .transition().duration(500)
+            .attr("y", function (d) {
+                return yScale(d.rate) + margin.bottom;
+            })
+            .attr("height", function (d) {
+                return bcHeight - yScale(d.rate);
+            });
+
+        var gElements = barsvg.selectAll("g").remove().exit();
+        var text = barsvg.selectAll("text").remove().exit();
+
+        var g = barsvg.append("g")
+            .attr("transform", "translate(" + 40 + "," + 40 + ")");
+
+        g.append("g")
+            .attr("transform", "translate(0," + bcHeight + ")")
+            .call(d3.axisBottom(xScale));
+
+        g.append("g")
+            .call(d3.axisLeft(yScale).tickFormat(function (d) {
+                return d + "%";
+            }).ticks(15))
+            .append("text")
+            .attr("text-anchor", "end")
+            .text("value");
+
+        barsvg.selectAll("rect")
+            .data(unemployment)
+            .append("title")
+            .text((d) => d.rate)
+
+})}
+
+
+renderBarChart();
+
+
+
+//***************************** Line Chart ************************************************
+
+
+let lcWidth = 500;
+let lcHeight = 500;
+
+var linesvg = d3.select("#line-container")
+    .append("svg")
+    .attr("width", lcWidth + margin.left)
+    .attr("height", lcHeight + margin.top)
+    .attr("id", "line-svg")
+    .append("g")
+    .attr("transform",
+        "translate(" + margin.left + "," + margin.top + ")")
+
+
+var parseDate = d3.timeParse("%Y-%m-%d")
+
+var x = d3.scaleTime().range([lcWidth, 0]);
+var y = d3.scaleLinear().range([lcHeight, 0]);
+
+/*var casesline = d3.line()
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.cases); });*/
+
+function renderCasesLine(county) {
+    d3.csv("https://raw.githubusercontent.com/Dmujt/covid_dash/master/cases-michigan.csv").then(function (data) {
+
+        data.forEach(function (d) {
+            d.date = parseDate(d.date);
+            d.county = d.county;
+            d.cases = +d.cases;
+            console.log(typeof(d.cases))
+        });
+
+        filtered = data.filter(function (d) {
+            return d.county === county
+        });
+
+
+        console.log("Filtered Data")
+        console.log(filtered);
+
+        x.domain(d3.extent(filtered, function (d) {
+            return d.date;
+        }));
+        y.domain([0, d3.max(filtered, function (d) {
+            return d.cases;
+        })]);
+
+        var linesvg = d3.select("#line-svg")
+
+        linesvg.append("path")
+            .attr("id","cases-line")
+            .datum(filtered)
+            .attr("class", "line")
+            .attr("stroke", "#ccc")
+            .attr("stroke-width", 1.5)
+            .attr("d", d3.line()
+                .x(function(d) { return x(d.date) })
+                .y(function(d) { return y(d.cases) })
+            );
+
+
+        linesvg.append("g")
+            .attr("transform", "translate(0," + height - margin.top + ")")
+            .call(d3.axisBottom(x));
+
+
+
+        linesvg.append("g")
+            .call(d3.axisRight(y))
+            .attr("transform",
+                "translate(" + lcWidth - margin.left - margin.right + "," + 0 + ")");;
+
+    });
+}
+
+
+
+renderCasesLine(selectedCounty);
+//***************************** Demographic Bar Chart *************************************************
+
+let dbWidth = 350;
+let dbHeight = 300;
+
+//same margin as previous bar chart
+
+var dembarsvg = d3.select("#dem-bar-container")
+    .append("svg")
+    .attr("width", bcWidth + margin.left + margin.right)
+    .attr("height", bcHeight + margin.top + margin.bottom)
+    .attr("id", "dem-bar-svg")
+
+var demxScale = d3.scaleBand()
+    .range([0, dbWidth])
+    .padding(0.2);
+
+var demyScale = d3.scaleLinear()
+    .range([dbHeight, 0]);
+
+var dbColorScale = d3.scaleThreshold()
+    .domain([0, 5, 10, 15, 20, 25])
+    .range(d3.schemeBlues[7]);
+
+
+
+
+
+function renderDemoBar ( ) {
+    d3.csv("https://raw.githubusercontent.com/Dmujt/covid_dash/master/demographics.csv").then(function (data) {
+
+        /*#TOT_POP, TOT_MALE/FEMALE = total
+    #IA = Native American
+    #WA = White
+    #AA = Asian
+    #BA = Black
+    #NA = Native Hawaiian or Pacific Islander
+    #TOM = Two or More
+    #H = Hispanic*/
+
+        data.forEach(function (d) {
+            d.ctyname = d.ctyname;
+            d.county = d.county;
+            d.variable = d.variable;
+            d.value = +d.value / 1000;
+            d.varindex = d.varindex;
+            d.text = d.text;
+        });
+
+        wayne = data.filter(function (d) {
+            return d.ctyname === "Wayne"
+        })
+        console.log("Wayne demographics")
+        console.log(wayne)
+
+        demxScale.domain(wayne.map(function (d) {
+            return d.varindex;
+        }));
+        demyScale.domain([0, d3.max(wayne, function (d) {
+            return +d.value;
+        })]);
+
+        var myLogScale = d3.scaleSymlog()
+            .domain([0, d3.max(wayne, function (d) {
+                return +d.value;
+            })])
+            .range([height, 0]);
+
+        dembarsvg.selectAll(".bar")
+            .data(wayne)
+            .enter().append("rect")
+            .attr("fill", function (d) {
+                return dbColorScale(d.value)
+            })
+            .attr("x", function (d) {
+                return demxScale(d.varindex) + margin.right;
+            })
+            .attr("width", demxScale.bandwidth())
+            .attr("y", function (d) {
+                return myLogScale(d.value) + margin.bottom;
+            })
+            .attr("height", function (d) {
+                return dbHeight - myLogScale(d.value);
+            });
+
+        var g = dembarsvg.append("g")
+            .attr("transform", "translate(" + 40 + "," + 40 + ")");
+
+        g.append("g")
+            .attr("transform", "translate(0," + dbHeight + ")")
+            .call(d3.axisBottom(demxScale));
+
+        g.append("g")
+            .call(d3.axisLeft(myLogScale).tickFormat(function (d) {
+                return d;
+            }).ticks(10))
+            .append("text")
+            .attr("text-anchor", "end")
+            .text("value");
+        dembarsvg.selectAll("rect")
+            .data(wayne)
+            .append("title")
+            .text((d) => d.text)
+    });
+}
+
+function demoBarUpdate(county) {
+
+    d3.csv("https://raw.githubusercontent.com/Dmujt/covid_dash/master/demographics.csv").then(function (data) {
+
+        data.forEach(function (d) {
+            d.ctyname = d.ctyname;
+            d.county = d.county;
+            d.variable = d.variable;
+            d.value = +d.value / 1000;
+            d.varindex = d.varindex;
+            d.text = d.text;
+        });
+
+        wayne = data.filter(function (d) {
+            return d.ctyname === toString(county);
+        })
+
+        console.log("County demographics")
+        console.log(wayne)
+
+        demxScale.domain(wayne.map(function (d) {
+            return d.varindex;
+        }));
+        demyScale.domain([0, d3.max(wayne, function (d) {
+            return +d.value;
+        })]);
+
+        var myLogScale = d3.scaleSymlog()
+            .domain([0, d3.max(wayne, function (d) {
+                return +d.value;
+            })])
+            .range([height, 0]);
+
+        dembarsvg.selectAll("rect").remove().exit()
+
+        dembarsvg.selectAll("rect")
+            .data(wayne)
+            .enter().append("rect")
+            .transition().duration(500)
+            .attr("fill", function (d) {
+                return dbColorScale(d.value)
+            })
+            .attr("x", function (d) {
+                return demxScale(d.varindex) + margin.right;
+            })
+            .attr("width", demxScale.bandwidth())
+            .attr("y", function (d) {
+                return myLogScale(d.value) + margin.bottom;
+            })
+            .transition().duration(500)
+            .attr("height", function (d) {
+                return dbHeight - myLogScale(d.value);
+            });
+
+        var gElements = dembarsvg.selectAll("g").remove().exit();
+        var text = dembarsvg.selectAll("text").remove().exit();
+
+        var g = dembarsvg.append("g")
+            .attr("transform", "translate(" + 40 + "," + 40 + ")");
+
+        g.append("g")
+            .attr("transform", "translate(0," + dbHeight + ")")
+            .call(d3.axisBottom(demxScale));
+
+        g.append("g")
+            .call(d3.axisLeft(myLogScale).tickFormat(function (d) {
+                return d;
+            }).ticks(10))
+            .append("text")
+            .attr("text-anchor", "end")
+            .text("value");
+        dembarsvg.selectAll("rect")
+            .data(wayne)
+            .append("title")
+            .text((d) => d.text)
+    });
+
+    }
+
+renderDemoBar();
+//***************************** Line Chart *********************************************
+
+
+
+
 
     window.onresize = resize;
 
