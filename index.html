@@ -27,6 +27,22 @@
 <h2>Line Chart</h2>
 <div id="line-container"></div>
 
+<style>
+
+#cases-line {
+    fill: none;
+    stroke: steelblue;
+    stroke-width: 1.5px;
+}
+
+#map-svg {
+    stroke: aliceblue;
+    stroke-width: 1.5px;
+}
+
+
+</style>
+
 
 
 <script>
@@ -328,6 +344,7 @@ function renderCasesLine(county) {
         var linesvg = d3.select("#line-svg")
 
         linesvg.append("path")
+            .attr("id","cases-line")
             .datum(filtered)
             .attr("class", "line")
             .attr("stroke", "#ccc")
@@ -378,6 +395,10 @@ var demyScale = d3.scaleLinear()
 var dbColorScale = d3.scaleThreshold()
     .domain([0, 5, 10, 15, 20, 25])
     .range(d3.schemeBlues[7]);
+
+
+
+
 
 function renderDemoBar ( ) {
     d3.csv("demographics.csv").then(function (data) {
