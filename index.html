@@ -5,6 +5,7 @@
     <title>GrizzHacks2020</title>
     <script src="https://d3js.org/d3.v5.js"></script>
     <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+    <script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js" integrity="sha512-4UKI/XKm3xrvJ6pZS5oTRvIQGIzZFoXR71rRBb1y2N+PbwAsKa5tPl2J6WvbEvwN3TxQCm8hMzsl/pO+82iRlg==" crossorigin="anonymous"></script>
 
 </head>
@@ -14,11 +15,14 @@
 <h1>Map of Michigan</h1>
 <div id="map-container"></div>
 
+
 <h1>Number Display</h1>
 <div id="number-container"></div>
 
 <h1>Demographic Bar Chart</h1>
 <div id="dem-bar-container"></div>
+
+<button onclick="updateBarChart()">Oof</button>
 
 <h1>Bar Chart</h1>
 <div id="bar-container"></div>
@@ -66,6 +70,8 @@ var mapData = d3.map();
     mapData.set(d.county, +d.rate);
 });*/
 
+var selectedCounty = "Wayne";
+
 var colorScale = d3.scaleThreshold()
     .domain([0, 2, 4, 6, 8, 10])
     .range(d3.schemeBlues[7]);
@@ -95,7 +101,7 @@ d3.json(michiganMap)
      geojsonmap.features.forEach(function(d) {
             d.NAME = d.county;
         });
-        
+
 
     g.selectAll('path')
         .data(geojsonmap.features)
@@ -103,14 +109,21 @@ d3.json(michiganMap)
         .append('path')
         .attr('class', 'county')
         .attr('d', path)
+        .on("click", function (d) {
+            selectedCounty = d.properties.NAME
+            updateBarChart(selectedCounty);
+            demoBarUpdate(selectedCounty);
+        })
         .attr('fill',
-            function (d) { return colorScale(d.rate = mapData.get(d.county));});
+            function (d) { return colorScale(8);});
 
 
     })
 
 
 //******************** Bar Chart **********************************************************
+//*******************************************************************************************
+//*******************************************************************************************
 
 
 let bcWidth = 350;
@@ -135,65 +148,215 @@ var BCcolorScale = d3.scaleThreshold()
     .domain([0, 6, 12, 18, 24, 30])
     .range(d3.schemeBlues[7]);
 
+function renderBarChart () {
+    d3.csv("unemployment.csv").then(function (data) {
 
-d3.csv("unemployment.csv").then(function(data) {
+        data.forEach(function (d) {
+            d.index = d.index;
+            d.county = d.county;
+            d.month = d.month;
+            d.rate = d.rate;
+        });
 
-    data.forEach(function(d) {
-        d.index = d.index;
-        d.county = d.county;
-        d.month = d.month;
-        d.rate = d.rate;
+        unemployment = data.filter(function (d) {
+            return d.county === "Oakland"
+        })
+        console.log(unemployment)
+
+        xScale.domain(unemployment.map(function (d) {
+            return d.month;
+        }));
+        yScale.domain([0, 25]);
+
+        barsvg.selectAll(".bar")
+            .data(unemployment)
+            .enter().append("rect")
+            .attr("fill", function (d) {
+                return BCcolorScale(d.rate)
+            })
+            .attr("x", function (d) {
+                return xScale(d.month) + margin.right;
+            })
+            .attr("width", xScale.bandwidth())
+            .attr("y", function (d) {
+                return yScale(d.rate) + margin.bottom;
+            })
+            .attr("height", function (d) {
+                return bcHeight - yScale(d.rate);
+            });
+
+        var g = barsvg.append("g")
+            .attr("transform", "translate(" + 40 + "," + 40 + ")");
+
+        g.append("g")
+            .attr("transform", "translate(0," + bcHeight + ")")
+            .call(d3.axisBottom(xScale));
+
+        g.append("g")
+            .call(d3.axisLeft(yScale).tickFormat(function (d) {
+                return d + "%";
+            }).ticks(15))
+            .append("text")
+            .attr("text-anchor", "end")
+            .text("value");
+        barsvg.selectAll("rect")
+            .data(unemployment)
+            .append("title")
+            .text((d) => d.rate)
     });
 
-    unemployment = data.filter(function(d) { return d.county === "Oakland"})
-    console.log(unemployment)
+}
 
-    xScale.domain(unemployment.map(function(d) { return d.month; }));
-    yScale.domain([0, 25]);
+function updateBarChart(county) {
 
-    barsvg.selectAll(".bar")
-        .data(unemployment)
-        .enter().append("rect")
-        .attr("fill", function (d) {
-            return BCcolorScale(d.rate)
+    d3.csv("unemployment.csv").then(function (data) {
+
+        data.forEach(function (d) {
+            d.index = d.index;
+            d.county = d.county;
+            d.month = d.month;
+            d.rate = +d.rate;
+        });
+
+        unemployment = data.filter(function (d) {
+            return toString(d.county) === toString(county);
         })
-        .attr("x", function(d) { return xScale(d.month) + margin.right; })
-        .attr("width", xScale.bandwidth())
-        .attr("y", function(d) { return yScale(d.rate) + margin.bottom; })
-        .attr("height", function(d) { return bcHeight - yScale(d.rate); });
 
-    var g = barsvg.append("g")
-        .attr("transform", "translate(" + 40 + "," + 40 + ")");
+        xScale.domain(unemployment.map(function (d) {
+            return d.month;
+        }));
+        yScale.domain([0,  d3.max(unemployment, function (d) {
+            return +d.rate;
+        })]);
 
-    g.append("g")
-        .attr("transform", "translate(0," + bcHeight + ")")
-        .call(d3.axisBottom(xScale));
+        barsvg.select(".bar").remove().exit()
 
-    g.append("g")
-        .call(d3.axisLeft(yScale).tickFormat(function(d){
-            return d + "%";
-        }).ticks(15))
-        .append("text")
-        .attr("text-anchor", "end")
-        .text("value");
-    barsvg.selectAll("rect")
-        .data(unemployment)
-        .append("title")
-        .text((d) => d.rate)
-});
+        barsvg.selectAll("rect")
+            .transition().duration(500)
+            .attr("fill", function (d) {
+                return BCcolorScale(d.rate)
+            })
+            .attr("x", function (d) {
+                return xScale(d.month) + margin.right;
+            })
+            .attr("width", xScale.bandwidth())
+            .transition().duration(500)
+            .attr("y", function (d) {
+                return yScale(d.rate) + margin.bottom;
+            })
+            .attr("height", function (d) {
+                return bcHeight - yScale(d.rate);
+            });
+
+        var gElements = barsvg.selectAll("g").remove().exit();
+        var text = barsvg.selectAll("text").remove().exit();
+
+        var g = barsvg.append("g")
+            .attr("transform", "translate(" + 40 + "," + 40 + ")");
+
+        g.append("g")
+            .attr("transform", "translate(0," + bcHeight + ")")
+            .call(d3.axisBottom(xScale));
+
+        g.append("g")
+            .call(d3.axisLeft(yScale).tickFormat(function (d) {
+                return d + "%";
+            }).ticks(15))
+            .append("text")
+            .attr("text-anchor", "end")
+            .text("value");
+
+        barsvg.selectAll("rect")
+            .data(unemployment)
+            .append("title")
+            .text((d) => d.rate)
+
+})}
+
+
+renderBarChart();
 
 
 //***************************** Line Chart ************************************************
 
 
-let lcWidth = 350;
-let lcHeight = 300;
+let lcWidth = 500;
+let lcHeight = 500;
 
-//same margin as bar chart
+var linesvg = d3.select("#line-container")
+    .append("svg")
+    .attr("width", lcWidth + margin.left)
+    .attr("height", lcHeight + margin.top)
+    .attr("id", "line-svg")
+    .append("g")
+    .attr("transform",
+        "translate(" + margin.left + "," + margin.top + ")")
+
+
+var parseDate = d3.timeParse("%Y-%m-%d")
+
+var x = d3.scaleTime().range([lcWidth, 0]);
+var y = d3.scaleLinear().range([lcHeight, 0]);
+
+/*var casesline = d3.line()
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.cases); });*/
+
+function renderCasesLine(county) {
+    d3.csv("cases-michigan.csv").then(function (data) {
+
+        data.forEach(function (d) {
+            d.date = parseDate(d.date);
+            d.county = d.county;
+            d.cases = +d.cases;
+            console.log(d.cases)
+        });
+
+        filtered = data.filter(function (d) {
+            return d.county === "Wayne"
+        });
+
+
+        console.log("Filtered Data")
+        console.log(filtered);
+
+        x.domain(d3.extent(filtered, function (d) {
+            return d.date;
+        }));
+        y.domain([0, d3.max(filtered, function (d) {
+            return d.cases;
+        })]);
+
+        var linesvg = d3.select("#line-svg")
+
+        linesvg.append("path")
+            .datum(filtered)
+            .attr("class", "line")
+            .attr("stroke", "#ccc")
+            .attr("stroke-width", 1.5)
+            .attr("d", d3.line()
+                .x(function(d) { return x(d.date) })
+                .y(function(d) { return y(d.cases) })
+            );
+
+
+        linesvg.append("g")
+            .attr("transform", "translate(0," + height - margin.top + ")")
+            .call(d3.axisBottom(x));
 
 
 
+        linesvg.append("g")
+            .call(d3.axisRight(y))
+            .attr("transform",
+                "translate(" + lcWidth - margin.left - margin.right + "," + 0 + ")");;
 
+    });
+}
+
+
+
+renderCasesLine(selectedCounty);
 //***************************** Demographic Bar Chart *************************************************
 
 let dbWidth = 350;
@@ -218,10 +381,10 @@ var dbColorScale = d3.scaleThreshold()
     .domain([0, 5, 10, 15, 20, 25])
     .range(d3.schemeBlues[7]);
 
+function renderDemoBar ( ) {
+    d3.csv("demographics.csv").then(function (data) {
 
-d3.csv("demographics.csv").then(function(data) {
-
-  /*#TOT_POP, TOT_MALE/FEMALE = total
+        /*#TOT_POP, TOT_MALE/FEMALE = total
     #IA = Native American
     #WA = White
     #AA = Asian
@@ -230,62 +393,152 @@ d3.csv("demographics.csv").then(function(data) {
     #TOM = Two or More
     #H = Hispanic*/
 
-    data.forEach(function(d) {
-        d.ctyname = d.ctyname;
-        d.county = d.county;
-        d.variable = d.variable;
-        d.value = +d.value / 1000;
-        d.varindex = d.varindex;
-        d.text = d.text;
+        data.forEach(function (d) {
+            d.ctyname = d.ctyname;
+            d.county = d.county;
+            d.variable = d.variable;
+            d.value = +d.value / 1000;
+            d.varindex = d.varindex;
+            d.text = d.text;
+        });
+
+        wayne = data.filter(function (d) {
+            return d.ctyname === "Wayne"
+        })
+        console.log("Wayne demographics")
+        console.log(wayne)
+
+        demxScale.domain(wayne.map(function (d) {
+            return d.varindex;
+        }));
+        demyScale.domain([0, d3.max(wayne, function (d) {
+            return +d.value;
+        })]);
+
+        var myLogScale = d3.scaleSymlog()
+            .domain([0, d3.max(wayne, function (d) {
+                return +d.value;
+            })])
+            .range([height, 0]);
+
+        dembarsvg.selectAll(".bar")
+            .data(wayne)
+            .enter().append("rect")
+            .attr("fill", function (d) {
+                return dbColorScale(d.value)
+            })
+            .attr("x", function (d) {
+                return demxScale(d.varindex) + margin.right;
+            })
+            .attr("width", demxScale.bandwidth())
+            .attr("y", function (d) {
+                return myLogScale(d.value) + margin.bottom;
+            })
+            .attr("height", function (d) {
+                return dbHeight - myLogScale(d.value);
+            });
+
+        var g = dembarsvg.append("g")
+            .attr("transform", "translate(" + 40 + "," + 40 + ")");
+
+        g.append("g")
+            .attr("transform", "translate(0," + dbHeight + ")")
+            .call(d3.axisBottom(demxScale));
+
+        g.append("g")
+            .call(d3.axisLeft(myLogScale).tickFormat(function (d) {
+                return d;
+            }).ticks(10))
+            .append("text")
+            .attr("text-anchor", "end")
+            .text("value");
+        dembarsvg.selectAll("rect")
+            .data(wayne)
+            .append("title")
+            .text((d) => d.text)
+    });
+}
+
+function demoBarUpdate(county) {
+
+    d3.csv("demographics.csv").then(function (data) {
+
+        data.forEach(function (d) {
+            d.ctyname = d.ctyname;
+            d.county = d.county;
+            d.variable = d.variable;
+            d.value = +d.value / 1000;
+            d.varindex = d.varindex;
+            d.text = d.text;
+        });
+
+        wayne = data.filter(function (d) {
+            return d.ctyname === toString(county);
+        })
+
+        console.log("County demographics")
+        console.log(wayne)
+
+        demxScale.domain(wayne.map(function (d) {
+            return d.varindex;
+        }));
+        demyScale.domain([0, d3.max(wayne, function (d) {
+            return +d.value;
+        })]);
+
+        var myLogScale = d3.scaleSymlog()
+            .domain([0, d3.max(wayne, function (d) {
+                return +d.value;
+            })])
+            .range([height, 0]);
+
+        dembarsvg.selectAll("rect").remove().exit()
+
+        dembarsvg.selectAll("rect")
+            .data(wayne)
+            .enter().append("rect")
+            .transition().duration(500)
+            .attr("fill", function (d) {
+                return dbColorScale(d.value)
+            })
+            .attr("x", function (d) {
+                return demxScale(d.varindex) + margin.right;
+            })
+            .attr("width", demxScale.bandwidth())
+            .attr("y", function (d) {
+                return myLogScale(d.value) + margin.bottom;
+            })
+            .transition().duration(500)
+            .attr("height", function (d) {
+                return dbHeight - myLogScale(d.value);
+            });
+
+        var gElements = dembarsvg.selectAll("g").remove().exit();
+        var text = dembarsvg.selectAll("text").remove().exit();
+
+        var g = dembarsvg.append("g")
+            .attr("transform", "translate(" + 40 + "," + 40 + ")");
+
+        g.append("g")
+            .attr("transform", "translate(0," + dbHeight + ")")
+            .call(d3.axisBottom(demxScale));
+
+        g.append("g")
+            .call(d3.axisLeft(myLogScale).tickFormat(function (d) {
+                return d;
+            }).ticks(10))
+            .append("text")
+            .attr("text-anchor", "end")
+            .text("value");
+        dembarsvg.selectAll("rect")
+            .data(wayne)
+            .append("title")
+            .text((d) => d.text)
     });
 
-    oakland = data.filter(function(d) { return d.ctyname === "Oscoda"})
-    console.log("Oakland demographics")
-    console.log(oakland)
+    }
 
-    demxScale.domain(oakland.map(function(d) { return d.varindex; }));
-    demyScale.domain([0, d3.max(oakland, function (d) {
-        return +d.value;
-    })]);
-
-    var myLogScale = d3.scaleSymlog()
-        .domain([0, d3.max(oakland, function (d) {
-            return +d.value;
-        })])
-        .range([height, 0]);
-
-    dembarsvg.selectAll(".bar")
-        .data(oakland)
-        .enter().append("rect")
-        .attr("fill", function (d) {
-            return dbColorScale(d.value)
-        })
-        .attr("x", function(d) { return demxScale(d.varindex) + margin.right; })
-        .attr("width", demxScale.bandwidth())
-        .attr("y", function(d) { return myLogScale(d.value) + margin.bottom; })
-        .attr("height", function(d) { return dbHeight - myLogScale(d.value); });
-
-    var g = dembarsvg.append("g")
-        .attr("transform", "translate(" + 40 + "," + 40 + ")");
-
-    g.append("g")
-        .attr("transform", "translate(0," + dbHeight + ")")
-        .call(d3.axisBottom(demxScale));
-
-    g.append("g")
-        .call(d3.axisLeft(myLogScale).tickFormat(function(d){
-            return d;
-        }).ticks(10))
-        .append("text")
-        .attr("text-anchor", "end")
-        .text("value");
-    dembarsvg.selectAll("rect")
-        .data(oakland)
-        .append("title")
-        .text((d) => d.text)
-});
-
-
+renderDemoBar();
 //***************************** Line Chart *********************************************
 
 
