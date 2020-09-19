@@ -38,14 +38,14 @@
             </div>
         </nav>
         <div class="row mt-2">
-            <div class="col col-lg-10 col-md-8 col-sm-12">
+            <div class="col col-lg-5 col-md-9 col-sm-12">
                 <div class="card" style='min-height:250px' >
                     <div class="card-body" id="map-container">
 
                     </div>
                 </div>
             </div>
-            <div class="col col-lg-2 col-md-4 col-sm-12">
+            <div class="col col-lg-7 col-md-3 col-sm-12">
                 <div class="card">
                     <div class="card-body">
                       Number Here
@@ -95,7 +95,7 @@
 //We will build a basic function to handle window resizing.
 function resize() {
     let width = document.getElementById('#map-container').clientWidth;
-    let height = width / 3.236;
+    let height = width / 2;
     d3.select('#map-container svg')
       .attr('width', width)
       .attr('height', height);
