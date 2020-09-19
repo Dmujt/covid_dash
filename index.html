@@ -12,29 +12,21 @@
 <body>
 
 <!-- Topojson file for Michigan provided by: https://github.com/deldersveld/topojson -->
-<h1>Map of Michigan</h1>
+<h2>Map of Michigan</h2>
 <div id="map-container"></div>
 
-
-<h1>Number Display</h1>
+<h2>Number Display</h2>
 <div id="number-container"></div>
 
-<h1>Demographic Bar Chart</h1>
+<h2>Population by Race</h2>
 <div id="dem-bar-container"></div>
 
-<button onclick="updateBarChart()">Oof</button>
-
-<h1>Bar Chart</h1>
+<h2>Unemployment Rate (%)</h2>
 <div id="bar-container"></div>
 
-<h1>Line Chart</h1>
+<h2>Line Chart</h2>
 <div id="line-container"></div>
 
-<h1>Treemap</h1>
-<div id="treemap-container"></div>
-
-<h1>Calendar</h1>
-<div id="calendar-container"></div>
 
 
 <script>
@@ -109,6 +101,12 @@ d3.json(michiganMap)
         .append('path')
         .attr('class', 'county')
         .attr('d', path)
+        .on("mouseover", function (d) {
+            document.getElementById('number-container').innerHTML = d.properties.NAME;
+        })
+        .on("mouseout", function (d) {
+            document.getElementById('number-container').innerHTML = "...";
+        })
         .on("click", function (d) {
             selectedCounty = d.properties.NAME
             updateBarChart(selectedCounty);
@@ -219,7 +217,7 @@ function updateBarChart(county) {
         });
 
         unemployment = data.filter(function (d) {
-            return toString(d.county) === toString(county);
+            return d.county === county;
         })
 
         xScale.domain(unemployment.map(function (d) {
@@ -309,11 +307,11 @@ function renderCasesLine(county) {
             d.date = parseDate(d.date);
             d.county = d.county;
             d.cases = +d.cases;
-            console.log(d.cases)
+            console.log(typeof(d.cases))
         });
 
         filtered = data.filter(function (d) {
-            return d.county === "Wayne"
+            return d.county === county
         });
 
 
