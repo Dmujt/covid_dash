@@ -53,8 +53,8 @@ const path = d3.geoPath(projection);
 
 const g = mapCanvas.append('g');
 
-let michiganMap = "MI-26-michigan-counties.json";
-let unemployment = "unemployment.csv"
+let michiganMap = "https://raw.githubusercontent.com/Dmujt/covid_dash/master/MI-26-michigan-counties.json";
+let unemployment = "https://raw.githubusercontent.com/Dmujt/covid_dash/master/unemployment.csv"
 
 var mapData = d3.map();
 
@@ -147,7 +147,7 @@ var BCcolorScale = d3.scaleThreshold()
     .range(d3.schemeBlues[7]);
 
 function renderBarChart () {
-    d3.csv("unemployment.csv").then(function (data) {
+    d3.csv("https://raw.githubusercontent.com/Dmujt/covid_dash/master/unemployment.csv").then(function (data) {
 
         data.forEach(function (d) {
             d.index = d.index;
@@ -301,7 +301,7 @@ var y = d3.scaleLinear().range([lcHeight, 0]);
     .y(function(d) { return y(d.cases); });*/
 
 function renderCasesLine(county) {
-    d3.csv("cases-michigan.csv").then(function (data) {
+    d3.csv("https://raw.githubusercontent.com/Dmujt/covid_dash/master/cases-michigan.csv").then(function (data) {
 
         data.forEach(function (d) {
             d.date = parseDate(d.date);
@@ -380,7 +380,7 @@ var dbColorScale = d3.scaleThreshold()
     .range(d3.schemeBlues[7]);
 
 function renderDemoBar ( ) {
-    d3.csv("demographics.csv").then(function (data) {
+    d3.csv("https://raw.githubusercontent.com/Dmujt/covid_dash/master/demographics.csv").then(function (data) {
 
         /*#TOT_POP, TOT_MALE/FEMALE = total
     #IA = Native American
@@ -459,7 +459,7 @@ function renderDemoBar ( ) {
 
 function demoBarUpdate(county) {
 
-    d3.csv("demographics.csv").then(function (data) {
+    d3.csv("https://raw.githubusercontent.com/Dmujt/covid_dash/master/demographics.csv").then(function (data) {
 
         data.forEach(function (d) {
             d.ctyname = d.ctyname;
