@@ -451,6 +451,31 @@ function renderCasesLine(county) {
     });
 }
 
+function updateLine(county) {
+
+    d3.csv("cases-michigan.csv").then(function (data) {
+        filtered = data.filter(function (d) {
+            return d.county === county
+        });
+
+        filtered.forEach(function (d) {
+            d.date = parseDate(d.date);
+            d.county = d.county;
+            d.cases = +d.cases;
+        });
+
+    var lines = linesvg.selectAll("#cases-line").datum(filtered).attr("class","line");
+
+    lines.transition().duration(1500)
+        .attr("d", d3.line()
+            .defined(d => !isNaN(d.Value))
+            .x(function (d) {
+                return x(d.date)
+            })
+            .y(function (d) {
+                return y(d.cases)
+            })
+        );})}
 
 
 renderCasesLine(selectedCounty);
