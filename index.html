@@ -78,7 +78,7 @@
                     </div>
                     <div class="col col-sm-6">
                         <div class="card">
-                            <h5 class="card-title">Daily Cases in X County</h5>
+                            <h4 class="card-title">Daily Cases in X County</h4>
                                 <div class="card-body" id="line-container">
                                 &nbsp;
                             </div>
@@ -90,14 +90,16 @@
         <div class="row mt-2">
             <div class="col col-lg-6 col-md-6 col-sm-12">
                 <div class="card">
-                    <div class="card-body" id="bar-container">
+                     <h4 class="card-title">Unemployment Rate in X County</h4>
+                        <div class="card-body" id="bar-container">
                         &nbsp;
                     </div>
                 </div>
             </div>
             <div class="col col-lg-6 col-md-6 col-sm-12">
                 <div class="card">
-                    <div class="card-body" id="dem-bar-container">
+                     <h4 class="card-title">Demographics of X County (Race and Gender)</h4>
+                        <div class="card-body" id="dem-bar-container">
                         &nbsp;
                     </div>
                 </div>
@@ -137,7 +139,7 @@ d3.select( "#map-container" )
 let mapCanvas = d3.select("#map-svg");
 
 const projection = d3.geoMercator()
-                    .scale(1500)
+                    .scale(1800)
                     .center([-85,44])
                     .translate([width/2, height/2 + 40]);
 
