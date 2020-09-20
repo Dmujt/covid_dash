@@ -745,6 +745,7 @@ function demoBarUpdate(county) {
             .attr("y", function (d) {
                 return myLogScale(d.value) + margin.bottom;
             })
+            .transition().duration(500)
             .attr("height", function (d) {
                 return dbHeight - myLogScale(d.value);
             });
