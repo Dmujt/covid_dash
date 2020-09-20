@@ -234,6 +234,7 @@ d3.json(michiganMap)
             selectedCounty = d.properties.NAME
             updateBarChart(selectedCounty);
             demoBarUpdate(selectedCounty);
+            updateLine(selectedCounty);
         })
         .attr('fill',
             d => {
@@ -280,7 +281,7 @@ function renderBarChart () {
             d.rate = d.rate;
         });
 
-        unemployment = data.filter(function (d) {
+       let unemployment = data.filter(function (d) {
             return d.county === "Oakland"
         })
         console.log(unemployment)
@@ -435,7 +436,7 @@ function renderCasesLine(county) {
             //console.log(typeof(d.cases))
         });
 
-        filtered = data.filter(function (d) {
+       let filtered = data.filter(function (d) {
             return d.county === county
         });
 
@@ -481,7 +482,7 @@ function renderCasesLine(county) {
 function updateLine(county) {
 
     d3.csv("cases-michigan.csv").then(function (data) {
-        filtered = data.filter(function (d) {
+       let filtered = data.filter(function (d) {
             return d.county === county
         });
 
@@ -555,11 +556,9 @@ function renderDemoBar ( ) {
             d.text = d.text;
         });
 
-        wayne = data.filter(function (d) {
+        let wayne = data.filter(function (d) {
             return d.ctyname === "Wayne"
         })
-        console.log("Wayne demographics")
-        console.log(wayne)
 
         demxScale.domain(wayne.map(function (d) {
             return d.varindex;
@@ -625,12 +624,9 @@ function demoBarUpdate(county) {
             d.text = d.text;
         });
 
-        wayne = data.filter(function (d) {
-            return d.ctyname === toString(county);
+        let wayne = data.filter(function (d) {
+            return d.ctyname === county;
         })
-
-        console.log("County demographics")
-        console.log(wayne)
 
         demxScale.domain(wayne.map(function (d) {
             return d.varindex;
