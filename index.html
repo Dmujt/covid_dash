@@ -13,6 +13,7 @@
     <script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js" integrity="sha512-4UKI/XKm3xrvJ6pZS5oTRvIQGIzZFoXR71rRBb1y2N+PbwAsKa5tPl2J6WvbEvwN3TxQCm8hMzsl/pO+82iRlg==" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://unpkg.com/d3fc@14.0.27/build/d3fc.js"></script>
 
 
 </head>
@@ -205,12 +206,12 @@ let predictedCases = "https://raw.githubusercontent.com/Dmujt/covid_dash/master/
                     .translate([width/2 + 30, height/2 + 10]);
 
         const path = d3.geoPath(projection);
-
+        var colorScale = d3.scaleSequential(d3.interpolateRdYlGn)
+        .domain([2000, 100])
         const g = mapCanvas.append('g');
         var mapData = d3.map();
 
-        var colorScale = d3.scaleSequential(d3.interpolateRdYlGn)
-        .domain([2000, 100])
+
 
         console.log("draw predicted cases");
             d3.json(michiganMap)
@@ -260,6 +261,61 @@ let predictedCases = "https://raw.githubusercontent.com/Dmujt/covid_dash/master/
                     return colorScale(d.CASES);
                 });
 
+                /**
+                 * CODE FOR THE LEGEND
+                const container = d3.select("#map-container svg");
+                const domain = colorScale.domain();
+                
+                const width = 100;
+                const height = 150.0;
+                
+                const [min, max] = domain;
+                const expandedDomain = d3.range(min, max, (max - min) / height);
+                
+                const xScale = d3
+                    .scaleBand()
+                    .domain([0, 1])
+                    .range([0, width]);
+                const yScale = d3
+                    .scaleLinear()
+                    .domain(domain)
+                    .range([height, 0]);
+                
+                const svgBar = fc
+                .autoBandwidth(fc.seriesSvgBar())
+                .xScale(xScale)
+                .yScale(yScale)
+                .crossValue(0)
+                .baseValue((_, i) => (i > 0 ? expandedDomain[i - 1] : 0))
+                .mainValue(d => d)
+                .decorate(selection => {
+                    selection.selectAll("path").style("fill", d => {return colorScale(d);} );
+                });
+                
+                const axisLabel = fc
+                .axisRight(yScale)
+                .tickValues([...domain, (domain[1] + domain[0]) / 2])
+                .tickSizeOuter(0);
+                
+                const legendSvg = container.append("svg")
+                    .attr("height", height)
+                    .attr("width", width);
+                
+                const legendBar = legendSvg
+                    .append("g")
+                    .datum(expandedDomain)
+                    .call(svgBar);
+                
+                const barWidth = Math.abs(legendBar.node().getBoundingClientRect().x);
+                legendSvg.append("g")
+                    .attr("transform", `translate(${barWidth})`)
+                .datum(expandedDomain)
+                .call(axisLabel)
+                .select(".domain")
+                .attr("visibility", "hidden");
+                
+                container.style("margin", "1em");
+                */
         })
         })
     }
