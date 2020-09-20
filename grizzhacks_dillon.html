@@ -8,6 +8,18 @@
 <meta name="generator" content="pandoc" />
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
+<meta charset="UTF-8">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<script src="https://d3js.org/d3.v5.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js" integrity="sha512-4UKI/XKm3xrvJ6pZS5oTRvIQGIzZFoXR71rRBb1y2N+PbwAsKa5tPl2J6WvbEvwN3TxQCm8hMzsl/pO+82iRlg==" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
 
 <meta name="author" content="Dillon Jaghory" />
 
@@ -352,9 +364,35 @@ summary {
 
 <body>
 
-
-<div class="container-fluid main-container">
-
+  <div class="container-fluid" style="margin-top: 10px;">
+    <div class="row justify-content-md-center">
+        <div class="col col-lg-10 col-md-10 col-sm-12">
+            <nav class="navbar navbar-expand-lg  navbar-dark bg-dark ">
+                <a class="navbar-brand" href="index.html">Michigan COVID Dashboard</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                  </button>    
+                <div class="collapse navbar-collapse" id="navbarNav">
+                  <ul class="navbar-nav">
+                    <li class="nav-item active">
+                      <a class="nav-link" href="grizzhacks_dillon.html">Data Cleaning Code (R)</a>
+                    </li>
+                    <li class="nav-item active">
+                      <a class="nav-link" href="ml.html">Machine Learning Code</a>
+                    </li>
+                    <li class="nav-item active mr-sm-2">
+                        <a class="nav-link " href="https://github.com/Dmujt/covid_dash">
+                        <i class="fa fa-github fa-lg"></i>
+                        </a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" href="references.html">Data Sources</a>
+                      </li>
+                  </ul>
+                </div>
+            </nav>
+            <div class="row mt-2">
+              <div class="col col-md-12">
 
 
 
@@ -567,6 +605,9 @@ $(document).ready(function () {
     document.getElementsByTagName("head")[0].appendChild(script);
   })();
 </script>
-
+</div>
+</div>
+</div>
+</div></div>
 </body>
 </html>
