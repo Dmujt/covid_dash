@@ -517,7 +517,7 @@ renderBarChart();
     .y(function(d) { return y(d.cases); });*/
 
 function renderCasesLine(county) {
-    let lcWidth = 300;
+    let lcWidth = $("#line-container").width() - 100;
     let lcHeight = 300;
     d3.selectAll("#line-container svg").remove();
 
