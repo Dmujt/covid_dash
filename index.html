@@ -112,7 +112,7 @@
                 <div class="row mt-3">
                     <div class="col col-sm-12 ">
                         <div class="card center-text"  style="height:425px">
-                                <h4 class="card-title">Daily Cases in X County</h4>
+                                <h4 class="card-title"  id="cases-title">Daily Cases in Wayne County</h4>
                                 <div class="card-body" id="line-container">
                                 &nbsp;
                             </div>
@@ -124,7 +124,7 @@
         <div class="row mt-2 mb-4">
             <div class="col col-lg-6 col-md-6 col-sm-12">
                 <div class="card center-text">
-                     <h4 class="card-title">Unemployment Rate in X County</h4>
+                     <h4 class="card-title" id="unemployment-title">Unemployment Rate in Wayne County</h4>
                         <div class="card-body" id="bar-container">
                         &nbsp;
                     </div>
@@ -132,7 +132,7 @@
             </div>
             <div class="col col-lg-6 col-md-6 col-sm-12">
                 <div class="card center-text">
-                     <h4 class="card-title">Demographics of X County (Race and Gender)</h4>
+                     <h4 class="card-title" id="demo-title">Demographics of Wayne County (Race and Gender)</h4>
                         <div class="card-body" id="dem-bar-container">
                         &nbsp;
                     </div>
@@ -231,9 +231,12 @@ d3.json(michiganMap)
             document.getElementById('number-container').innerHTML = "&nbsp;";
         })
         .on("click", function (d) {
-            selectedCounty = d.properties.NAME
-            updateBarChart(selectedCounty);
-            demoBarUpdate(selectedCounty);
+            $("#demo-title").text("Demographics of "+d.properties.NAME+" County (Race and Gender)");
+            $("#cases-title").text("Daily Cases in "+d.properties.NAME+" County");
+            $("#unemployment-title").text("Unemployment Rate in "+d.properties.NAME+" County");
+
+            updateBarChart(d.properties.NAME);
+            demoBarUpdate(d.properties.NAME);
         })
         .attr('fill',
             d => {
@@ -265,10 +268,11 @@ var xScale = d3.scaleBand()
 
 var yScale = d3.scaleLinear()
     .range([bcHeight, 0]);
-
+    
 var BCcolorScale = d3.scaleThreshold()
-    .range([0, 2000])
-    .range(d3.interpolateTurbo);
+    .domain([0, 6, 12, 18, 24, 30])
+    .range(d3.schemeBlues[7]);
+
 
 function renderBarChart () {
     d3.csv("https://raw.githubusercontent.com/Dmujt/covid_dash/master/unemployment.csv").then(function (data) {
