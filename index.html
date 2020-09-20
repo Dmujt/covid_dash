@@ -701,10 +701,12 @@ function renderDemoBar ( ) {
 
         var g = dembarsvg.append("g")
             .attr("transform", "translate(" + 40 + "," + 40 + ")");
+            var ticks = [1,2,3,4,5,6,7,8];
+            var tickLabels = ['Total','Male','Female','White','Black','Asia','Native','Pac Isl','Multiracial'];
 
         g.append("g")
             .attr("transform", "translate(0," + dbHeight + ")")
-            .call(d3.axisBottom(demxScale));
+            .call(d3.axisBottom(demxScale).tickValues(ticks).tickFormat(function(d,i){ return tickLabels[i]}));
 
         g.append("g")
             .call(d3.axisLeft(myLogScale).tickFormat(function (d) {
