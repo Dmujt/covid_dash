@@ -66,16 +66,6 @@
         font-size:1.25rem;
         font-weight:bolder;
     }
-
-    #btn-current, #btn-predicted {
-        position:absolute;
-        bottom:5px;
-        right:5px;
-    }
-    #btn-current {
-        right:85px;
-
-    }
 </style>
 
 
@@ -91,7 +81,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
               <ul class="navbar-nav">
                 <li class="nav-item active">
-                  <a class="nav-link" href="grizzhacks_dillon.html">Cleaning Code (R)</a>
+                  <a class="nav-link" href="grizzhacks_dillon.html">Data Cleaning Code (R)</a>
                 </li>
                 <li class="nav-item active">
                   <a class="nav-link" href="ml.html">Machine Learning Code</a>
@@ -111,9 +101,6 @@
                     <div class="card-body" id="map-container" style="height:480px">
                         &nbsp;
                     </div>
-                    <a class="btn btn-success btn-sm" id="btn-current">Current</a>
-                    <a class="btn btn-info btn-sm" id="btn-predicted">Predicted</a>
-
                 </div>
             </div>
             <div class="col col-lg-7 col-md-3 col-sm-12 row-height-fixed">
@@ -137,7 +124,7 @@
         <div class="row mt-2 mb-4">
             <div class="col col-lg-6 col-md-6 col-sm-12">
                 <div class="card center-text">
-                     <h4 class="card-title" id="unemployment-title">Unemployment Rate in Wayne County</h4>
+                     <h4 class="card-title" id="unemployment-title">Unemployment Rate in Wayne County: 01/20-07/20 (%)</h4>
                         <div class="card-body" id="bar-container">
                         &nbsp;
                     </div>
@@ -145,7 +132,7 @@
             </div>
             <div class="col col-lg-6 col-md-6 col-sm-12">
                 <div class="card center-text">
-                     <h4 class="card-title" id="demo-title">Demographics of Wayne County (Race and Gender)</h4>
+                     <h4 class="card-title" id="demo-title">Demographics of Wayne County (Population by Race and Gender - 1000's)</h4>
                         <div class="card-body" id="dem-bar-container">
                         &nbsp;
                     </div>
@@ -171,187 +158,95 @@ function resize() {
 
 
 $(document).ready(function(){
-    var selectedCounty = "Wayne";
 
 //*********************** Map of Michigan **************************************
+
 let width = 450;
 let height = 450;
+
+d3.select( "#map-container" )
+    .append( "svg" )
+    .attr("id", "map-svg")
+    .attr( "width", width )
+    .attr( "height", height );
+
+let mapCanvas = d3.select("#map-svg");
+
+const projection = d3.geoMercator()
+                    .scale(2900)
+                    .center([-85,44])
+                    .translate([width/2 + 30, height/2 + 10]);
+
+const path = d3.geoPath(projection);
+
+const g = mapCanvas.append('g');
 
 let michiganMap = "https://raw.githubusercontent.com/Dmujt/covid_dash/master/MI-26-michigan-counties.json";
 let unemployment = "https://raw.githubusercontent.com/Dmujt/covid_dash/master/unemployment.csv"
 let cases = "https://raw.githubusercontent.com/Dmujt/covid_dash/master/cases-michigan.csv"
-let predictedCases = "https://raw.githubusercontent.com/Dmujt/covid_dash/master/predicted-cases-michigan.csv"
+
+var mapData = d3.map();
+
+/*var mapSet = d3.csv("unemployment.csv",function(d) {
+    mapData.set(d.county, +d.rate);
+});*/
+
+var selectedCounty = "Wayne";
+
+var colorScale = d3.scaleSequential(d3.interpolateRdYlGn)
+    .domain([2000, 0])
+
+d3.json(michiganMap)
+    .then(data => {
+
+    d3.csv(cases).then(
+        (dd) => {
+        let dat = dd;
+        dat = dat.filter(function(d) {return d.date == "2020-09-17" });
+        const geojsonmap = topojson.feature(data, data.objects.cb_2015_michigan_county_20m);
+        //console.log(mapData);
+
+        geojsonmap.features.forEach(function(d) {
+            d.NAME = d.properties.NAME;
+            d.CASES = dat.filter(function(c) {return c.county == d.NAME })[0];
+            if (d.CASES !== undefined) {
+                d.CASES = d.CASES["cases"];
+            } else {
+                d.CASES = 0;
+
+            }
+        });
 
 
+    g.selectAll('path')
+        .data(geojsonmap.features)
+        .enter()
+        .append('path')
+        .attr('class', 'county')
+        .attr('d', path)
+        .on("mouseover", function (d) {
+            document.getElementById('number-container').innerHTML = d.properties.NAME;
+        })
+        .on("mouseout", function (d) {
+            document.getElementById('number-container').innerHTML = "&nbsp;";
+        })
+        .on("click", function (d) {
+            $("#demo-title").text("Demographics of "+d.properties.NAME+" County (Race and Gender)");
+            $("#cases-title").text("Daily Cases in "+d.properties.NAME+" County");
+            $("#unemployment-title").text("Unemployment Rate in "+d.properties.NAME+" County");
 
-
-    function drawPredictedCaseData() {
-        d3.selectAll("#map-container svg").remove();
-
-        d3.select( "#map-container" )
-        .append( "svg" )
-        .attr("id", "map-svg")
-        .attr( "width", width )
-        .attr( "height", height );
-
-        let mapCanvas = d3.select("#map-svg");
-
-        const projection = d3.geoMercator()
-                    .scale(2900)
-                    .center([-85,44])
-                    .translate([width/2 + 30, height/2 + 10]);
-
-        const path = d3.geoPath(projection);
-
-        const g = mapCanvas.append('g');
-        var mapData = d3.map();
-
-        var colorScale = d3.scaleSequential(d3.interpolateRdYlGn)
-        .domain([2000, 100])
-
-        console.log("draw predicted cases");
-            d3.json(michiganMap)
-        .then(data => {
-
-        d3.csv(predictedCases).then(
-            (dd) => {
-            let dat = dd;
-            const geojsonmap = topojson.feature(data, data.objects.cb_2015_michigan_county_20m);
-            //console.log(mapData);
-
-            geojsonmap.features.forEach(function(d) {
-                d.NAME = d.properties.NAME;
-                d.CASES = dat.filter(function(c) {return c.County == d.NAME })[0];
-                if (d.CASES !== undefined) {
-                    d.CASES = parseInt(d.CASES["Day5"]) - parseInt(d.CASES["Day1"]);
-                } else {
-                    d.CASES = 0;
-
-                }
+            updateBarChart(d.properties.NAME);
+            demoBarUpdate(d.properties.NAME);
+            updateLine(d.properties.NAME);
+        })
+        .attr('fill',
+            d => {
+                return colorScale(d.CASES);
             });
 
+    })
+    })
 
-        g.selectAll('path')
-            .data(geojsonmap.features)
-            .enter()
-            .append('path')
-            .attr('class', 'county')
-            .attr('d', path)
-            .on("mouseover", function (d) {
-                document.getElementById('number-container').innerHTML = d.properties.NAME;
-            })
-            .on("mouseout", function (d) {
-                document.getElementById('number-container').innerHTML = "&nbsp;";
-            })
-            .on("click", function (d) {
-                $("#demo-title").text("Demographics of "+d.properties.NAME+" County (Race and Gender)");
-                $("#cases-title").text("Daily Cases in "+d.properties.NAME+" County");
-                $("#unemployment-title").text("Unemployment Rate in "+d.properties.NAME+" County");
-
-                updateBarChart(d.properties.NAME);
-                demoBarUpdate(d.properties.NAME);
-                updateLine(d.properties.NAME);
-            })
-            .attr('fill',
-                d => {
-                    return colorScale(d.CASES);
-                });
-
-        })
-        })
-    }
-
-    function drawCaseData() {
-        d3.selectAll("#map-container svg").remove();
-
-        d3.select( "#map-container" )
-        .append( "svg" )
-        .attr("id", "map-svg")
-        .attr( "width", width )
-        .attr( "height", height );
-
-        let mapCanvas = d3.select("#map-svg");
-
-        const projection = d3.geoMercator()
-                    .scale(2900)
-                    .center([-85,44])
-                    .translate([width/2 + 30, height/2 + 10]);
-
-        const path = d3.geoPath(projection);
-
-        const g = mapCanvas.append('g');
-        var mapData = d3.map();
-
-        var colorScale = d3.scaleSequential(d3.interpolateRdYlGn)
-        .domain([2000, 0])
-
-            d3.json(michiganMap)
-        .then(data => {
-
-        d3.csv(cases).then(
-            (dd) => {
-            let dat = dd;
-            dat = dat.filter(function(d) {return d.date == "2020-09-17" });
-            const geojsonmap = topojson.feature(data, data.objects.cb_2015_michigan_county_20m);
-            //console.log(mapData);
-
-            geojsonmap.features.forEach(function(d) {
-                d.NAME = d.properties.NAME;
-                d.CASES = dat.filter(function(c) {return c.county == d.NAME })[0];
-                if (d.CASES !== undefined) {
-                    d.CASES = d.CASES["cases"];
-                } else {
-                    d.CASES = 0;
-
-                }
-            });
-
-
-        g.selectAll('path')
-            .data(geojsonmap.features)
-            .enter()
-            .append('path')
-            .attr('class', 'county')
-            .attr('d', path)
-            .on("mouseover", function (d) {
-                document.getElementById('number-container').innerHTML = d.properties.NAME;
-            })
-            .on("mouseout", function (d) {
-                document.getElementById('number-container').innerHTML = "&nbsp;";
-            })
-            .on("click", function (d) {
-                $("#demo-title").text("Demographics of "+d.properties.NAME+" County (Race and Gender)");
-                $("#cases-title").text("Daily Cases in "+d.properties.NAME+" County");
-                $("#unemployment-title").text("Unemployment Rate in "+d.properties.NAME+" County");
-
-                updateBarChart(d.properties.NAME);
-                demoBarUpdate(d.properties.NAME);
-                updateLine(d.properties.NAME);
-            })
-            .attr('fill',
-                d => {
-                    return colorScale(d.CASES);
-                });
-
-        })
-        })
-    }
-
-    drawCaseData();
-        $("#btn-current").unbind().click(function() {
-            $( this ).removeClass("btn-info");
-            $( this ).addClass("btn-success");
-            $("#btn-predicted").addClass("btn-info");
-            $("#btn-predicted").removeClass("btn-success");
-            drawCaseData();
-        })
-        $("#btn-predicted").unbind().click(function() {
-            $( this ).removeClass("btn-info");
-            $( this ).addClass("btn-success");
-            $("#btn-current").addClass("btn-info");
-            $("#btn-current").removeClass("btn-success");
-            drawPredictedCaseData();
-        })
 //******************** Bar Chart **********************************************************
 //*******************************************************************************************
 //*******************************************************************************************
@@ -778,10 +673,14 @@ function demoBarUpdate(county) {
 
         var g = dembarsvg.append("g")
             .attr("transform", "translate(" + 40 + "," + 40 + ")");
+        
+        var ticks = [1,2,3,4,5,6,7,8];
+        var tickLabels = ['Total','Male','Female','White','Black','Asia','Native','Pac Isl','Multiracial']
 
         g.append("g")
             .attr("transform", "translate(0," + dbHeight + ")")
-            .call(d3.axisBottom(demxScale));
+            .call(d3.axisBottom(demxScale).tickValues(ticks)
+            .tickFormat(function(d,i){ return tickLabels[i]}))});
 
         g.append("g")
             .call(d3.axisLeft(myLogScale).tickFormat(function (d) {
