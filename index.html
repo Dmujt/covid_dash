@@ -733,7 +733,7 @@ function demoBarUpdate(county) {
 
         dembarsvg.selectAll("rect")
             .data(wayne)
-            .enter().append()
+            .enter().append("rect")
             .transition().duration(500)
             .attr("fill", function (d) {
                 return dbColorScale(d.value)
