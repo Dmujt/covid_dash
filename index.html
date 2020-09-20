@@ -91,7 +91,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
               <ul class="navbar-nav">
                 <li class="nav-item active">
-                  <a class="nav-link" href="grizzhacks_dillon.html">Data Visualization Code</a>
+                  <a class="nav-link" href="grizzhacks_dillon.html">Data Cleaning Code (R)</a>
                 </li>
                 <li class="nav-item active">
                   <a class="nav-link" href="ml.html">Machine Learning Code</a>
@@ -776,10 +776,14 @@ function demoBarUpdate(county) {
 
         var g = dembarsvg.append("g")
             .attr("transform", "translate(" + 40 + "," + 40 + ")");
+        
+        var ticks = [1,2,3,4,5,6,7,8];
+        var tickLabels = ['Total','Male','Female','White','Black','Asia','Native','Pac Isl','Multiracial']
 
         g.append("g")
             .attr("transform", "translate(0," + dbHeight + ")")
-            .call(d3.axisBottom(demxScale));
+            .call(d3.axisBottom(demxScale).tickValues(ticks)
+            .tickFormat(function(d,i){ return tickLabels[i]}))});
 
         g.append("g")
             .call(d3.axisLeft(myLogScale).tickFormat(function (d) {
