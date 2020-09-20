@@ -742,10 +742,10 @@ function demoBarUpdate(county) {
                 return demxScale(d.varindex) + margin.right;
             })
             .attr("width", demxScale.bandwidth())
+            .transition().duration(500)
             .attr("y", function (d) {
                 return myLogScale(d.value) + margin.bottom;
             })
-            .transition().duration(500)
             .attr("height", function (d) {
                 return dbHeight - myLogScale(d.value);
             });
