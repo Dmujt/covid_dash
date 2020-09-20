@@ -30,6 +30,19 @@
     }
     
     
+    .row-height-fixed{
+        height:525px; 
+    }
+
+    .card-title {
+        padding-left: 5px;
+        padding-top: 10px;
+        text-align: center;
+        font-size: 1.25rem;
+        color: #343a40;
+        height:25px;
+    }
+    
 </style>
 
 
@@ -38,7 +51,7 @@
 <div class="row justify-content-md-center">
     <div class="col col-lg-10 col-md-10 col-sm-12">
         <nav class="navbar navbar-expand-lg  navbar-dark bg-dark ">
-            <a class="navbar-brand" href="#">COVID Case Predictions</a>
+            <a class="navbar-brand" href="#">Michigan COVID Dashboard</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
               </button>    
@@ -59,30 +72,24 @@
             </div>
         </nav>
         <div class="row mt-2">
-            <div class="col col-lg-5 col-md-9 col-sm-12">
-                <div class="card" style='min-height:250px' >
-                    <div class="card-body" id="map-container">
+            <div class="col col-lg-5 col-md-9 col-sm-12 row-height-fixed">
+                <div class="card">
+                    <h4 class="card-title">Michigan COVID Cases</h4>
+                    <div class="card-body" id="map-container" style="height:480px">
                         &nbsp;
                     </div>
                 </div>
             </div>
-            <div class="col col-lg-7 col-md-3 col-sm-12">
-                <div class="card">
+            <div class="col col-lg-7 col-md-3 col-sm-12 row-height-fixed">
+                <div class="card" style="height:75px">
                     <div class="card-body" id="number-container">
                         &nbsp;
                     </div>
                 </div>
-                <div class="row mt-2">
-                    <div class="col col-sm-6">
-                        <div class="card">
-                            <div class="card-body">
-                                &nbsp;
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col col-sm-6">
-                        <div class="card">
-                            <h4 class="card-title">Daily Cases in X County</h4>
+                <div class="row mt-3">
+                    <div class="col col-sm-12 ">
+                        <div class="card "  style="height:425px">
+                                <h4 class="card-title">Daily Cases in X County</h4>
                                 <div class="card-body" id="line-container">
                                 &nbsp;
                             </div>
@@ -91,7 +98,7 @@
                 </div>
             </div>
         </div>
-        <div class="row mt-2">
+        <div class="row mt-2 mb-4">
             <div class="col col-lg-6 col-md-6 col-sm-12">
                 <div class="card">
                      <h4 class="card-title">Unemployment Rate in X County</h4>
@@ -143,9 +150,9 @@ d3.select( "#map-container" )
 let mapCanvas = d3.select("#map-svg");
 
 const projection = d3.geoMercator()
-                    .scale(1800)
+                    .scale(2900)
                     .center([-85,44])
-                    .translate([width/2, height/2 + 40]);
+                    .translate([width/2 + 30, height/2 + 10]);
 
 const path = d3.geoPath(projection);
 
@@ -376,8 +383,8 @@ renderBarChart();
 //***************************** Line Chart ************************************************
 
 
-let lcWidth = 500;
-let lcHeight = 500;
+let lcWidth = 300;
+let lcHeight = 300;
 
 var linesvg = d3.select("#line-container")
     .append("svg")
