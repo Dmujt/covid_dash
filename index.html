@@ -250,7 +250,7 @@ let predictedCases = "https://raw.githubusercontent.com/Dmujt/covid_dash/master/
 
                 updateBarChart(d.properties.NAME);
                 demoBarUpdate(d.properties.NAME);
-                updateLine(d.properties.NAME);
+                renderCasesLine(d.properties.NAME);
             })
             .attr('fill',
                 d => {
@@ -326,7 +326,7 @@ let predictedCases = "https://raw.githubusercontent.com/Dmujt/covid_dash/master/
 
                 updateBarChart(d.properties.NAME);
                 demoBarUpdate(d.properties.NAME);
-                updateLine(d.properties.NAME);
+                renderCasesLine(d.properties.NAME);
             })
             .attr('fill',
                 d => {
@@ -512,30 +512,30 @@ renderBarChart();
 
 //***************************** Line Chart ************************************************
 
-
-let lcWidth = 300;
-let lcHeight = 300;
-
-var linesvg = d3.select("#line-container")
-    .append("svg")
-    .attr("width", lcWidth + margin.left)
-    .attr("height", lcHeight + margin.top)
-    .attr("id", "line-svg")
-    .append("g")
-    .attr("transform",
-        "translate(" + margin.left + "," + margin.top + ")")
-
-
-var parseDate = d3.timeParse("%Y-%m-%d")
-
-var x = d3.scaleTime().range([lcWidth, 0]);
-var y = d3.scaleLinear().range([lcHeight, 0]);
-
 /*var casesline = d3.line()
     .x(function(d) { return x(d.date); })
     .y(function(d) { return y(d.cases); });*/
 
 function renderCasesLine(county) {
+    let lcWidth = 300;
+    let lcHeight = 300;
+    d3.selectAll("#line-container svg").remove();
+
+    var linesvg = d3.select("#line-container")
+        .append("svg")
+        .attr("width", lcWidth + margin.left)
+        .attr("height", lcHeight + margin.top)
+        .attr("id", "line-svg")
+        .append("g")
+        .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")")
+
+
+    var parseDate = d3.timeParse("%Y-%m-%d")
+
+    var x = d3.scaleTime().range([lcWidth, 0]);
+    var y = d3.scaleLinear().range([lcHeight, 0]);
+
     d3.csv("https://raw.githubusercontent.com/Dmujt/covid_dash/master/cases-michigan.csv").then(function (data) {
 
         data.forEach(function (d) {
@@ -587,32 +587,6 @@ function renderCasesLine(county) {
 
     });
 }
-
-function updateLine(county) {
-
-    d3.csv("cases-michigan.csv").then(function (data) {
-       let filtered = data.filter(function (d) {
-            return d.county === county
-        });
-
-        filtered.forEach(function (d) {
-            d.date = parseDate(d.date);
-            d.county = d.county;
-            d.cases = +d.cases;
-        });
-
-    var lines = linesvg.selectAll("#cases-line").datum(filtered).attr("class","line");
-
-    lines.transition().duration(1500)
-        .attr("d", d3.line()
-            .defined(d => !isNaN(d.Value))
-            .x(function (d) {
-                return x(d.date)
-            })
-            .y(function (d) {
-                return y(d.cases)
-            })
-        );})}
 
 
 renderCasesLine(selectedCounty);
